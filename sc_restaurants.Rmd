@@ -95,7 +95,7 @@ Variables:
 names(restaurants)
 ```
 
-Overall Ratings:
+## Overall Ratings:
 ```{r}
 summary(restaurants$rating)
 
@@ -112,7 +112,7 @@ At first glance, it seems people generally enjoy the restaurants, with a median 
 
 However, we have not taken into account the number of reviews that these restaurants received.
 
-## Ratings and Number of Reviews
+## Number of Reviews
 ```{r, fig.width = 3, fig.height = 4}
 summary(restaurants$review_count)
 
@@ -121,6 +121,14 @@ restaurants %>% filter(review_count <= 5) %>% select(name, review_count)
 
 The median number of reviews is 47.5. There is one restaurant with only one review, Yallah Taco (the new location on W. College Ave). There are 3 other restaurants with 5 reviews or fewer: Cafe Alina, Central Reseration, and Hello Bistro. I note that all 4 restaurants are relatively new, having opened in the last year to year and a half.
 
+```{r}
+restaurants %>% arrange(desc(review_count)) %>% select(name, review_count) %>% head(3)
+```
+
+Faccia Luna, Little Szechuan, and Big Bowl Noodles are the most frequently reviewd restaurants.
+
+
+## Ratings and Number of Reviews
 ```{r}
 ggplot(restaurants, aes(x = review_count, y = rating)) +
   geom_point() +
@@ -137,4 +145,21 @@ The 6 most highly rated restaurants are:
 restaurants %>% arrange(desc(rating)) %>% select(name, rating, review_count) %>% head
 ```
 
-The top-rated restaurant in State College is Cafe Alina with a bangin' 5 star rating. However, since Cafe Alina only has 2 reviews, 
+The top-rated restaurant in State College is Cafe Alina with a bangin' 5 star rating. However, since Cafe Alina only has 2 reviews, the rating we see may not be representative of the true customer experience.
+
+## Bottom Restaurants
+
+The 6 most poorly rated restaurants are:
+```{r}
+restaurants %>% arrange(rating) %>% select(name, rating, review_count) %>% head
+```
+
+We see that Weirdough, which opened just this past September, is off to a rough start. Uncle Chen's Mongolian is tied for last place in the ratings.
+
+## Map of restaurants
+
+
+
+
+
+
