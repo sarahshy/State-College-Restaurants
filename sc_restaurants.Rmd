@@ -10,12 +10,14 @@ output: ioslides_presentation
 ```{r, frontMatter}
 library(tidyverse)
 library(httr)
+library(readr)
+library(ggplot2)
 ```
 
 
 ```{r, api}
-client_id <- ### your client id
-client_secret <- ### your api key
+client_id <- read_file("api_id.txt")
+client_secret <- read_file("api_key.txt")
 
 res <- POST("https://api.yelp.com/oauth2/token",
             body = list(grant_type = "client_credentials",
@@ -30,8 +32,8 @@ yelp <- "https://api.yelp.com"
 term <- "food"
 location <- "State College, PA"
 categories <- NULL
-limit <- 10
-radius <- 100
+limit <- 50
+radius <- 2000
 url <- modify_url(yelp, path = c("v3", "businesses", "search"),
                   query = list(term = term, location = location, 
                                limit = limit,
@@ -72,8 +74,32 @@ yelp_httr_parse <- function(x) {
 
 results_list <- lapply(results$businesses, FUN = yelp_httr_parse)
 
-business_data <- do.call("rbind", results_list)
+restaurants <- do.call("rbind", results_list)
 ```
 
 
-## 
+## Overview of food-related business
+
+Variables:
+```{r}
+names(restaurants)
+```
+
+### Overall Ratings
+
+```{r}
+summary(restaurants$rating)
+
+ggplot(restaurants, aes(y = rating)) + geom_boxplot() + theme_minimal()
+ggplot(restaurants, aes(x = rating)) + geom_histogram(binwidth = 1, fill = "orange", col = "black", boundary = 0) + xlim(0,5) + theme_minimal()
+```
+
+At first glance, it seems people generally enjoy the restaurants, with a median rating of 4 stars, and none below 2.5.
+
+However, we have not taken into account the number of reviews that these restaurants received.
+```{r}
+summary(restaurants$review_count)
+```
+
+
+
