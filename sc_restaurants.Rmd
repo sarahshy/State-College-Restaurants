@@ -1,5 +1,5 @@
 ---
-title: "State College Restaurants"
+title: "What should I eat for dinner?"
 author: "Sarah Shy"
 date: "12/31/2020"
 output: html_document
@@ -17,17 +17,24 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
+Using the Yelp API, I pulled data on 50 restaurants in the State College area. This is an exploratory analysis of the restaurant ratings.
+
 ```{r, frontMatter}
 library(tidyverse)
 library(httr)
 library(readr)
 library(ggplot2)
+library(ggmap)
+library(magrittr)
+library(plotly)
+library(scales)
+library(viridis)
 ```
 
 
 ```{r, api}
-client_id <- read_file("api_id.txt")
-client_secret <- read_file("api_key.txt")
+client_id <- read_file("yelp_api_id.txt")
+client_secret <- read_file("yelp_api_key.txt")
 
 res <- POST("https://api.yelp.com/oauth2/token",
             body = list(grant_type = "client_credentials",
@@ -157,6 +164,36 @@ restaurants %>% arrange(rating) %>% select(name, rating, review_count) %>% head
 We see that Weirdough, which opened just this past September, is off to a rough start. Uncle Chen's Mongolian is tied for last place in the ratings.
 
 ## Map of restaurants
+```{r}
+# set API key
+register_google(key = read_file("google_api_key.txt")) 
+
+# get map
+sc_map <- get_map(location = c(lon = mean(restaurants$longitude),
+                               lat = mean(restaurants$latitude)), zoom = 14,
+                  maptype = "roadmap", scale = 2)
+
+```
+
+```{r}
+# plot restaurants
+map_rating <- ggmap(sc_map) +
+  geom_point(data = restaurants, aes(x = longitude, y = latitude, col = rating, group = name), alpha = 0.8) +
+  scale_color_viridis(direction = -1) +
+  labs(x = "", y = "")
+
+ggplotly(map_rating, tooltip = "group")
+
+
+
+
+restaurants %<>% mutate(top_half = ifelse(rating >= median(rating), "Above median", "Below median"))
+map_top_half <- ggmap(sc_map) +
+  geom_point(data = restaurants, aes(x = longitude, y = latitude, col = top_half, group = name), alpha = 0.8) +
+  labs(x = "", y = "", col = "Rating")
+
+ggplotly(map_top_half, tooltip = "group")
+```
 
 
 
