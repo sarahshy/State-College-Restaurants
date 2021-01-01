@@ -1,4 +1,4 @@
-# State College Restaurants
+# What should I eat for dinner?
 
 ## Project Description
 This is a side project for exploring the restaurants in the State College area and their Yelp ratings. The research questions include:
