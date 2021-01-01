@@ -101,9 +101,7 @@ restaurants <- do.call("rbind", results_list)
 
 Variables:
 ```{r}
-names(restaurants) %>%
-  kable() %>%
-  kable_styling()
+names(restaurants)
 ```
 
 ## Overall Ratings:
