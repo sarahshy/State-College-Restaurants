@@ -10,8 +10,9 @@ knitr::opts_chunk$set(
   echo = FALSE,
   message = FALSE,
   warning = FALSE,
-  fig.width = 4,
-  fig.height = 3
+  cache = TRUE,
+  fig.width = 3,
+  fig.height = 2
 )
 ```
 
@@ -29,6 +30,7 @@ library(magrittr)
 library(plotly)
 library(scales)
 library(viridis)
+library(kableExtra)
 ```
 
 
@@ -99,14 +101,16 @@ restaurants <- do.call("rbind", results_list)
 
 Variables:
 ```{r}
-names(restaurants)
+names(restaurants) %>%
+  kable() %>%
+  kable_styling()
 ```
 
 ## Overall Ratings:
 ```{r}
 summary(restaurants$rating)
 
-ggplot(restaurants, aes(y = rating)) +
+ggplot(restaurants, aes(x = rating)) +
   geom_boxplot(fill = "orange") +
   theme_minimal()
 ggplot(restaurants, aes(x = rating)) +
@@ -123,13 +127,22 @@ However, we have not taken into account the number of reviews that these restaur
 ```{r, fig.width = 3, fig.height = 4}
 summary(restaurants$review_count)
 
-restaurants %>% filter(review_count <= 5) %>% select(name, review_count)
+restaurants %>%
+  filter(review_count <= 5) %>%
+  select(name, review_count) %>%
+  kable() %>%
+  kable_styling()
 ```
 
 The median number of reviews is 47.5. There is one restaurant with only one review, Yallah Taco (the new location on W. College Ave). There are 3 other restaurants with 5 reviews or fewer: Cafe Alina, Central Reseration, and Hello Bistro. I note that all 4 restaurants are relatively new, having opened in the last year to year and a half.
 
 ```{r}
-restaurants %>% arrange(desc(review_count)) %>% select(name, review_count) %>% head(3)
+restaurants %>%
+  arrange(desc(review_count)) %>%
+  select(name, review_count) %>%
+  head(3) %>%
+  kable() %>%
+  kable_styling()
 ```
 
 Faccia Luna, Little Szechuan, and Big Bowl Noodles are the most frequently reviewd restaurants.
@@ -149,21 +162,34 @@ The scatterplot indicates no relationship between the number of reviews and the 
 
 The 6 most highly rated restaurants are:
 ```{r}
-restaurants %>% arrange(desc(rating)) %>% select(name, rating, review_count) %>% head
+restaurants %>%
+  arrange(desc(rating)) %>%
+  select(name, rating, review_count) %>%
+  head %>%
+  kable() %>%
+  kable_styling()
 ```
 
-The top-rated restaurant in State College is Cafe Alina with a bangin' 5 star rating. However, since Cafe Alina only has 2 reviews, the rating we see may not be representative of the true customer experience.
+The top-rated restaurant in State College is Cafe Alina with a bangin' 5 star rating. However, since Cafe Alina only has 2 reviews, the rating we see may not be representative of the true customer experience. The two customers who reviewed may have had a particularly enjoyable experience at the restaurant and felt compelled to share their amazing experience.
 
 ## Bottom Restaurants
 
 The 6 most poorly rated restaurants are:
 ```{r}
-restaurants %>% arrange(rating) %>% select(name, rating, review_count) %>% head
+restaurants %>%
+  arrange(rating) %>%
+  select(name, rating, review_count) %>%
+  head %>%
+  kable() %>%
+  kable_styling()
 ```
 
 We see that Weirdough, which opened just this past September, is off to a rough start. Uncle Chen's Mongolian is tied for last place in the ratings.
 
 ## Map of restaurants
+
+You may use the interactive maps to explore the locations of the restaurants in the dataset. In the first plot, the restaurants are colored by their Yelp rating. In the second plot, the restaurants are colored by whether or not their Yelp rating is above the median rating in the dataset (4.0).
+
 ```{r}
 # set API key
 register_google(key = read_file("google_api_key.txt")) 
@@ -175,7 +201,7 @@ sc_map <- get_map(location = c(lon = mean(restaurants$longitude),
 
 ```
 
-```{r}
+```{r, fig.width = 7, fig.height = 6}
 # plot restaurants
 map_rating <- ggmap(sc_map) +
   geom_point(data = restaurants, aes(x = longitude, y = latitude, col = rating, group = name), alpha = 0.8) +
@@ -185,11 +211,10 @@ map_rating <- ggmap(sc_map) +
 ggplotly(map_rating, tooltip = "group")
 
 
-
-
 restaurants %<>% mutate(top_half = ifelse(rating >= median(rating), "Above median", "Below median"))
 map_top_half <- ggmap(sc_map) +
-  geom_point(data = restaurants, aes(x = longitude, y = latitude, col = top_half, group = name), alpha = 0.8) +
+  geom_point(data = restaurants, aes(x = longitude, y = latitude, col = top_half, group = name), alpha = 0.5) +
+  scale_color_manual(values = c("blue", "red")) +
   labs(x = "", y = "", col = "Rating")
 
 ggplotly(map_top_half, tooltip = "group")
